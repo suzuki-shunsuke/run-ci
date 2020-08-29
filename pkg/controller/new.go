@@ -16,7 +16,7 @@ type Controller struct {
 }
 
 type Git interface {
-	Fetch(ctx context.Context, branch string) error
+	Fetch(ctx context.Context, remote, branch string) error
 	Checkout(ctx context.Context, branch string) error
 	CommitEmpty(ctx context.Context, msg string) error
 	Push(ctx context.Context, branch string) error

@@ -8,7 +8,6 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/suzuki-shunsuke/run-ci/pkg/config"
 	gh "github.com/suzuki-shunsuke/run-ci/pkg/github"
 )
 
@@ -17,11 +16,11 @@ type ParamsUpdatePR struct {
 	EmptyCommitMsg string
 }
 
-func (ctrl Controller) UpdatePR(ctx context.Context, prCfg config.PullRequest) error {
+func (ctrl Controller) UpdatePR(ctx context.Context) error {
 	prs, _, err := ctrl.GitHub.ListPRs(ctx, gh.ParamsListPRs{
 		Owner: ctrl.Config.Owner,
 		Repo:  ctrl.Config.Repo,
-		Base:  prCfg.Base,
+		Base:  ctrl.Config.Base,
 	})
 	if err != nil {
 		return err
@@ -68,14 +67,6 @@ func (ctrl Controller) UpdatePR(ctx context.Context, prCfg config.PullRequest) e
 	return nil
 }
 
-func (ctrl Controller) UpdatePRs(ctx context.Context) {
-	for _, prCfg := range ctrl.Config.PullRequests {
-		if err := ctrl.UpdatePR(ctx, prCfg); err != nil {
-			log.Println(err)
-		}
-	}
-}
-
 func (ctrl Controller) updatePR(ctx context.Context, params ParamsUpdatePR) error {
 	if ctrl.Config.GitCommand.Use {
 		return ctrl.updatePRByGit(ctx, params)
@@ -86,7 +77,7 @@ func (ctrl Controller) updatePR(ctx context.Context, params ParamsUpdatePR) erro
 func (ctrl Controller) updatePRByGit(ctx context.Context, params ParamsUpdatePR) error {
 	branch := params.Branch
 	emptyCommitMsg := params.EmptyCommitMsg
-	if err := ctrl.Git.Fetch(ctx, branch); err != nil {
+	if err := ctrl.Git.Fetch(ctx, "origin", branch); err != nil {
 		return err
 	}
 	if err := ctrl.Git.Checkout(ctx, branch); err != nil {

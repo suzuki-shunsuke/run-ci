@@ -48,6 +48,14 @@ func (runner Runner) Run(ctx context.Context, args ...string) error {
 						Usage: "GitHub Access Token [$GITHUB_TOKEN, $GITHUB_ACCESS_TOKEN]",
 					},
 					&cli.StringFlag{
+						Name:  "base",
+						Usage: "base branch. Either the option 'base' or 'all' should be set",
+					},
+					&cli.BoolFlag{
+						Name:  "all",
+						Usage: "get pull requests without specifying the base branch. Either the option 'base' or 'all' should be set",
+					},
+					&cli.StringFlag{
 						Name:    "config",
 						Aliases: []string{"c"},
 						Usage:   "configuration file path",
@@ -63,6 +71,13 @@ func (runner Runner) Run(ctx context.Context, args ...string) error {
 				Name:   "merge",
 				Usage:  "merge the pull request's base branch",
 				Action: runner.mergeAction,
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "remote",
+						Usage: "the remote repository",
+						Value: "origin",
+					},
+				},
 			},
 		},
 	}
@@ -74,20 +89,25 @@ var (
 	ErrGitHubAccessTokenIsRequired error = errors.New("GitHub Access Token is required")
 	ErrOwnerIsRequired             error = errors.New("owner is required")
 	ErrRepoIsRequired              error = errors.New("repo is required")
+	ErrEitherAllorBaseIsRequired   error = errors.New("either the option 'base' or 'all' should be set")
+	ErrBothAllAndBaseCantBeSet     error = errors.New("both the option 'base' and 'all' can't be set at the same time")
 )
 
 func (runner Runner) setCLIArg(c *cli.Context, cfg config.Config) config.Config {
-	owner := c.String("owner")
-	if owner != "" {
+	if owner := c.String("owner"); owner != "" {
 		cfg.Owner = owner
 	}
-	repo := c.String("repo")
-	if repo != "" {
+	if repo := c.String("repo"); repo != "" {
 		cfg.Repo = repo
 	}
-	token := c.String("github-token")
-	if token != "" {
+	if token := c.String("github-token"); token != "" {
 		cfg.GitHubToken = token
+	}
+	if base := c.String("base"); base != "" {
+		cfg.Base = base
+	}
+	if c.Bool("all") {
+		cfg.All = true
 	}
 	return cfg
 }
@@ -139,6 +159,13 @@ func (runner Runner) action(c *cli.Context) error {
 		return ErrRepoIsRequired
 	}
 
+	if !cfg.All && cfg.Base == "" {
+		return ErrEitherAllorBaseIsRequired
+	}
+	if cfg.All && cfg.Base != "" {
+		return ErrBothAllAndBaseCantBeSet
+	}
+
 	ghClient := github.New(c.Context, github.ParamsNew{
 		Token: cfg.GitHubToken,
 	})
@@ -159,6 +186,5 @@ func (runner Runner) action(c *cli.Context) error {
 		}),
 	}
 
-	ctrl.UpdatePRs(c.Context)
-	return nil
+	return ctrl.UpdatePR(c.Context)
 }

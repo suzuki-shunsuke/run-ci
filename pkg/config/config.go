@@ -7,14 +7,10 @@ type Config struct {
 	Repo           string
 	EmptyCommitMsg string `yaml:"empty_commit_msg"`
 	Expr           string
-	GitHubToken    string        `yaml:"github_token"`
-	GitCommand     GitCommand    `yaml:"git_command"`
-	PullRequests   []PullRequest `yaml:"pull_requests"`
-}
-
-type PullRequest struct {
-	Base string
-	Expr string
+	GitHubToken    string     `yaml:"github_token"`
+	GitCommand     GitCommand `yaml:"git_command"`
+	Base           string     `yaml:"-"`
+	All            bool       `yaml:"-"`
 }
 
 type GitCommand struct {

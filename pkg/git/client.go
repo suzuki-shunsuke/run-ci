@@ -39,11 +39,11 @@ func (client Client) env() []string {
 	}
 }
 
-func (client Client) Fetch(ctx context.Context, branch string) error {
+func (client Client) Fetch(ctx context.Context, remote, branch string) error {
 	return client.Executor.Run(ctx, execute.Params{
 		Cmd: "git",
 		Args: []string{
-			"fetch", "origin", branch,
+			"fetch", remote, branch,
 		},
 	})
 }
