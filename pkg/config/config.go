@@ -13,7 +13,6 @@ type Config struct {
 }
 
 type PullRequest struct {
-	Head string
 	Base string
 	Expr string
 }

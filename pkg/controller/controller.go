@@ -22,7 +22,6 @@ func (ctrl Controller) UpdatePR(ctx context.Context, prCfg config.PullRequest) e
 		Owner: ctrl.Config.Owner,
 		Repo:  ctrl.Config.Repo,
 		Base:  prCfg.Base,
-		Head:  prCfg.Head,
 	})
 	if err != nil {
 		return err
