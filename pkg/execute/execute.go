@@ -54,7 +54,7 @@ func (exc Executor) Run(ctx context.Context, params Params) error {
 
 	cmd.Env = append(exc.Environ, params.Envs...) //nolint:gocritic
 	if !params.Quiet {
-		fmt.Fprintln(exc.Stderr, "+ "+params.Cmd+strings.Join(params.Args, " "))
+		fmt.Fprintln(exc.Stderr, "+ "+params.Cmd+" "+strings.Join(params.Args, " "))
 	}
 	if params.DryRun {
 		return nil
