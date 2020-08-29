@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 
 	"github.com/suzuki-shunsuke/run-ci/pkg/config"
@@ -42,7 +43,11 @@ func (ctrl Controller) UpdatePR(ctx context.Context, prCfg config.PullRequest) e
 			log.Println(err)
 			continue
 		}
-		matched, err := ctrl.Expr.Match(m)
+		M := map[string]interface{}{
+			"pr":  m,
+			"env": os.Getenv,
+		}
+		matched, err := ctrl.Expr.Match(M)
 		if err != nil {
 			log.Println(err)
 			continue
