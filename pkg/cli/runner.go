@@ -59,6 +59,11 @@ func (runner Runner) Run(ctx context.Context, args ...string) error {
 				Usage:  "generate a configuration file if it doesn't exist",
 				Action: runner.initAction,
 			},
+			{
+				Name:   "merge",
+				Usage:  "merge the pull request's base branch",
+				Action: runner.mergeAction,
+			},
 		},
 	}
 
@@ -87,7 +92,7 @@ func (runner Runner) setCLIArg(c *cli.Context, cfg config.Config) config.Config 
 	return cfg
 }
 
-func (runner Runner) action(c *cli.Context) error { //nolint:funlen
+func (runner Runner) readConfig(c *cli.Context) (config.Config, error) {
 	reader := config.Reader{
 		ExistFile: func(p string) bool {
 			_, err := os.Stat(p)
@@ -99,10 +104,14 @@ func (runner Runner) action(c *cli.Context) error { //nolint:funlen
 
 	wd, err := os.Getwd()
 	if err != nil {
-		return err
+		return config.Config{}, err
 	}
 
-	cfg, err := reader.FindAndRead(cfgPath, wd)
+	return reader.FindAndRead(cfgPath, wd)
+}
+
+func (runner Runner) action(c *cli.Context) error {
+	cfg, err := runner.readConfig(c)
 	if err != nil {
 		return err
 	}

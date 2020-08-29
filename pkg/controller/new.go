@@ -22,6 +22,7 @@ type Git interface {
 	Push(ctx context.Context, branch string) error
 	PushForce(ctx context.Context, branch string) error
 	Reset(ctx context.Context) error
+	Merge(ctx context.Context, branch string) error
 }
 
 type GitHub interface {
