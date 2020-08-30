@@ -93,13 +93,3 @@ func (client Client) PushForce(ctx context.Context, branch string) error {
 		},
 	})
 }
-
-func (client Client) Merge(ctx context.Context, branch string) error {
-	return client.Executor.Run(ctx, execute.Params{
-		Cmd: "git",
-		Args: []string{
-			"merge", "--no-edit", branch,
-		},
-		Envs: client.env(),
-	})
-}

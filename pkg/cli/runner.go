@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 
 	"github.com/suzuki-shunsuke/go-ci-env/cienv"
@@ -66,18 +67,6 @@ func (runner Runner) Run(ctx context.Context, args ...string) error {
 				Name:   "init",
 				Usage:  "generate a configuration file if it doesn't exist",
 				Action: runner.initAction,
-			},
-			{
-				Name:   "merge",
-				Usage:  "merge the pull request's base branch",
-				Action: runner.mergeAction,
-				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:  "remote",
-						Usage: "the remote repository",
-						Value: "origin",
-					},
-				},
 			},
 		},
 	}
@@ -170,6 +159,7 @@ func (runner Runner) action(c *cli.Context) error {
 		Token: cfg.GitHubToken,
 	})
 
+	log.Println("expr: " + cfg.Expr)
 	ex, err := expr.New(cfg.Expr)
 	if err != nil {
 		return fmt.Errorf("it is failed to compile the expression. Please check the expression: %w", err)
