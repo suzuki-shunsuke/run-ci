@@ -18,7 +18,9 @@ jobs:
         golangci-lint run
     - name: test
       run: |
-        bash ci/test.sh
+        bash ci/test.sh run-ci
+      env:
+        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
 
     - name: remove changes
       # Sometimes it is failed to release by goreleaser due to changes of go.sum
