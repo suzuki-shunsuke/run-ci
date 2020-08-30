@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/suzuki-shunsuke/run-ci/pkg/expr"
 	gh "github.com/suzuki-shunsuke/run-ci/pkg/github"
 )
 
@@ -44,6 +45,9 @@ func (ctrl Controller) UpdatePR(ctx context.Context) error {
 		M := map[string]interface{}{
 			"pr":  m,
 			"env": os.Getenv,
+			"util": map[string]interface{}{
+				"labelNames": expr.LabelNames,
+			},
 		}
 		matched, err := ctrl.Expr.Match(M)
 		if err != nil {

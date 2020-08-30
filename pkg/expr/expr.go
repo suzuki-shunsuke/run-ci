@@ -29,3 +29,15 @@ func (ex Expr) Match(params interface{}) (bool, error) {
 	}
 	return true, nil
 }
+
+func LabelNames(labels interface{}) []string {
+	if labels == nil {
+		return []string{}
+	}
+	a := labels.([]interface{})
+	b := make([]string, len(a))
+	for i, label := range a {
+		b[i] = label.(map[string]interface{})["name"].(string)
+	}
+	return b
+}
