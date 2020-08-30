@@ -16,7 +16,6 @@ the task `merge the base branch to the pull request and rerun CI` is bothersome 
 `run-ci` provides the following sub commands.
 
 * update-pr: run CI by updating the reference of the pull request's branch for a moment and restoring it immediately
-* merge: merge the base branch to the feature branch
 
 `update-pr` does the following things by GitHub API
 
@@ -25,14 +24,12 @@ the task `merge the base branch to the pull request and rerun CI` is bothersome 
 * [update the pull request's reference to the empty commit](https://docs.github.com/en/rest/reference/git#update-a-reference)
 * [restore the pull request's reference immediately](https://docs.github.com/en/rest/reference/git#update-a-reference)
 
-`merge` runs the `git merge` command internally, so `merge` depends on `Git`.
-
 ## How to use
 
 Use `run-ci` in CI.
 
 * In CI of the base branch, run `run-ci update-pr` to run CI of pull requests
-* In CI of the pull request, run `run-ci merge` to merge the update of the base branch
+* In CI of the pull request, merge the base branch to the feature branch
 
 ## Example
 
@@ -68,7 +65,6 @@ VERSION:
 COMMANDS:
    update-pr  run pull requests' CI
    init       generate a configuration file if it doesn't exist
-   merge      merge the pull request's base branch
    help, h    Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
@@ -130,21 +126,6 @@ If you run CI regardless of the base branch, please specify `--all`.
 $ run-ci update-pr --all
 ```
 
-### merge
-
-```
-$ run-ci merge --help
-NAME:
-   run-ci merge - merge the pull request's base branch
-
-USAGE:
-   run-ci merge [command options] [arguments...]
-
-OPTIONS:
-   --remote value  the remote repository (default: "origin")
-   --help, -h      show help (default: false)
-```
-
 ## Configuration
 
 The configuration file path can be specified with the `--config (-c)` option.
@@ -175,7 +156,7 @@ ex.
 # .run-ci.yaml
 # exclude pull requests which have the label "ignore-run-ci" or the author is "renovate[bot]"
 expr: |
-  "ignore-run-ci" not in pr.labels && pr.user.login != "renovate[bot]"`
+  "ignore-run-ci" not in util.labelNames(pr.labels) && pr.user.login != "renovate[bot]"
 ```
 
 As the expression engine, [antonmedv/expr](https://github.com/antonmedv/expr) is used.
@@ -193,6 +174,8 @@ ex. https://play.golang.org/p/RrwWPT6cBuo
 
 * `pr`: pull request. Please see the response body of [list pull requests API](https://docs.github.com/en/rest/reference/pulls#list-pull-requests) 
 * `env`: The function to get the value of the environment variable. If the environment variable isn't set, the empty string is returned. [os.Getenv](https://golang.org/pkg/os/#Getenv) is used
+* `util`: The utility functions.
+  * `labelNames(pr.labels) []string`: return the list of the pull request label names.
 
 ## LICENSE
 
