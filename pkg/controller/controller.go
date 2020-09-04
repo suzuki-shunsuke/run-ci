@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/suzuki-shunsuke/run-ci/pkg/expr"
 	gh "github.com/suzuki-shunsuke/run-ci/pkg/github"
@@ -102,7 +103,7 @@ func (ctrl Controller) updatePRByGit(ctx context.Context, params ParamsUpdatePR)
 	return nil
 }
 
-func (ctrl Controller) updatePRByAPI(ctx context.Context, params ParamsUpdatePR) error {
+func (ctrl Controller) updatePRByAPI(ctx context.Context, params ParamsUpdatePR) error { //nolint:funlen
 	log.Println("update by GitHub API")
 	branch := "heads/" + params.Branch
 	emptyCommitMsg := params.EmptyCommitMsg
@@ -145,6 +146,17 @@ func (ctrl Controller) updatePRByAPI(ctx context.Context, params ParamsUpdatePR)
 	})
 	if err != nil {
 		return fmt.Errorf("failed to update a git reference by GitHub API %s/%s %s %s: %w", ctrl.Config.Owner, ctrl.Config.Repo, branch, sha, err)
+	}
+
+	// https://github.community/t/what-is-a-pull-request-synchronize-event/14784/2
+	// > A pull_request event it’s only triggered when the pull request’s tracking branch is synchronized with the source branch for the pull request,
+	// > and that happens when the source branch is updated.
+	// wait for GitHub to synchronize the change of the source branch.
+	// Otherwise, the `pull_request` event doesn't occur and the webhook isn't sent to the CI service.
+	timer := time.NewTimer(5 * time.Second) //nolint:gomnd
+	select {
+	case <-timer.C:
+	case <-ctx.Done():
 	}
 
 	_, _, err = ctrl.GitHub.UpdateRef(ctx, gh.ParamsUpdateRef{
