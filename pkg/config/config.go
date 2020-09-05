@@ -7,6 +7,7 @@ type Config struct {
 	Repo           string
 	EmptyCommitMsg string `yaml:"empty_commit_msg"`
 	Expr           string
+	LogLevel       string     `yaml:"log_level"`
 	GitHubToken    string     `yaml:"github_token"`
 	GitCommand     GitCommand `yaml:"git_command"`
 	Base           string     `yaml:"-"`

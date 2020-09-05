@@ -57,6 +57,10 @@ func (runner Runner) Run(ctx context.Context, args ...string) error {
 						Usage: "get pull requests without specifying the base branch. Either the option 'base' or 'all' should be set",
 					},
 					&cli.StringFlag{
+						Name:  "log-level",
+						Usage: "log level",
+					},
+					&cli.StringFlag{
 						Name:    "config",
 						Aliases: []string{"c"},
 						Usage:   "configuration file path",
@@ -159,6 +163,16 @@ func (runner Runner) action(c *cli.Context) error { //nolint:funlen
 		Token: cfg.GitHubToken,
 	})
 
+	if cfg.LogLevel != "" {
+		lvl, err := logrus.ParseLevel(cfg.LogLevel)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"log_level": cfg.LogLevel,
+			}).WithError(err).Error("the log level is invalid")
+		}
+		logrus.SetLevel(lvl)
+	}
+
 	logrus.WithFields(logrus.Fields{
 		"expr":             cfg.Expr,
 		"owner":            cfg.Owner,
@@ -166,6 +180,7 @@ func (runner Runner) action(c *cli.Context) error { //nolint:funlen
 		"empty_commit_msg": cfg.EmptyCommitMsg,
 		"base":             cfg.Base,
 		"all":              cfg.All,
+		"log_level":        cfg.LogLevel,
 	}).Debug("config")
 	ex, err := expr.New(cfg.Expr)
 	if err != nil {
