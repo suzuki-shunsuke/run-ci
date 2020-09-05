@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
+	"github.com/google/go-github/v32/github"
 	"github.com/sirupsen/logrus"
 	"github.com/suzuki-shunsuke/run-ci/pkg/expr"
 	gh "github.com/suzuki-shunsuke/run-ci/pkg/github"
@@ -18,7 +20,7 @@ type ParamsUpdatePR struct {
 	Logger         *logrus.Entry
 }
 
-func (ctrl Controller) UpdatePR(ctx context.Context) error {
+func (ctrl Controller) UpdatePR(ctx context.Context) error { //nolint:funlen
 	prs, _, err := ctrl.GitHub.ListPRs(ctx, gh.ParamsListPRs{
 		Owner: ctrl.Config.Owner,
 		Repo:  ctrl.Config.Repo,
@@ -31,6 +33,7 @@ func (ctrl Controller) UpdatePR(ctx context.Context) error {
 		return nil
 	}
 
+	var wg sync.WaitGroup
 	for _, pr := range prs {
 		logger := logrus.WithFields(logrus.Fields{
 			"owner":     ctrl.Config.Owner,
@@ -67,15 +70,19 @@ func (ctrl Controller) UpdatePR(ctx context.Context) error {
 		}
 
 		logger.Debug("update the pull request")
-		if err := ctrl.updatePR(ctx, ParamsUpdatePR{
-			Branch:         *pr.Head.Ref,
-			EmptyCommitMsg: ctrl.Config.EmptyCommitMsg,
-			Logger:         logger,
-		}); err != nil {
-			logger.WithError(err).Error("failed to update the pull request")
-			continue
-		}
+		wg.Add(1)
+		go func(pr *github.PullRequest, logger *logrus.Entry) {
+			defer wg.Done()
+			if err := ctrl.updatePR(ctx, ParamsUpdatePR{
+				Branch:         *pr.Head.Ref,
+				EmptyCommitMsg: ctrl.Config.EmptyCommitMsg,
+				Logger:         logger,
+			}); err != nil {
+				logger.WithError(err).Error("failed to update the pull request")
+			}
+		}(pr, logger)
 	}
+	wg.Wait()
 	return nil
 }
 
