@@ -102,6 +102,9 @@ func (runner Runner) setCLIArg(c *cli.Context, cfg config.Config) config.Config 
 	if c.Bool("all") {
 		cfg.All = true
 	}
+	if logLevel := c.String("log-level"); logLevel != "" {
+		cfg.LogLevel = logLevel
+	}
 	return cfg
 }
 
