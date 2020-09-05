@@ -69,7 +69,7 @@ func (ctrl Controller) UpdatePR(ctx context.Context) error { //nolint:funlen
 			continue
 		}
 
-		logger.Debug("update the pull request")
+		logger.Info("update the pull request")
 		wg.Add(1)
 		go func(pr *github.PullRequest, logger *logrus.Entry) {
 			defer wg.Done()
