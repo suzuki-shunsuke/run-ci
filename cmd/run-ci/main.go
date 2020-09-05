@@ -2,16 +2,16 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
 
+	"github.com/sirupsen/logrus"
 	"github.com/suzuki-shunsuke/run-ci/pkg/cli"
 	"github.com/suzuki-shunsuke/run-ci/pkg/signal"
 )
 
 func main() {
 	if err := core(); err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 }
 

@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 
+	"github.com/sirupsen/logrus"
 	"github.com/suzuki-shunsuke/go-ci-env/cienv"
 	"github.com/suzuki-shunsuke/run-ci/pkg/config"
 	"github.com/suzuki-shunsuke/run-ci/pkg/constant"
@@ -119,7 +119,7 @@ func (runner Runner) readConfig(c *cli.Context) (config.Config, error) {
 	return reader.FindAndRead(cfgPath, wd)
 }
 
-func (runner Runner) action(c *cli.Context) error {
+func (runner Runner) action(c *cli.Context) error { //nolint:funlen
 	cfg, err := runner.readConfig(c)
 	if err != nil {
 		return err
@@ -159,7 +159,14 @@ func (runner Runner) action(c *cli.Context) error {
 		Token: cfg.GitHubToken,
 	})
 
-	log.Println("expr: " + cfg.Expr)
+	logrus.WithFields(logrus.Fields{
+		"expr":             cfg.Expr,
+		"owner":            cfg.Owner,
+		"repo":             cfg.Repo,
+		"empty_commit_msg": cfg.EmptyCommitMsg,
+		"base":             cfg.Base,
+		"all":              cfg.All,
+	}).Debug("config")
 	ex, err := expr.New(cfg.Expr)
 	if err != nil {
 		return fmt.Errorf("it is failed to compile the expression. Please check the expression: %w", err)

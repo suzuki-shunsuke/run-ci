@@ -4,11 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
-	"strconv"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"github.com/suzuki-shunsuke/run-ci/pkg/expr"
 	gh "github.com/suzuki-shunsuke/run-ci/pkg/github"
 )
@@ -16,6 +15,7 @@ import (
 type ParamsUpdatePR struct {
 	Branch         string
 	EmptyCommitMsg string
+	Logger         *logrus.Entry
 }
 
 func (ctrl Controller) UpdatePR(ctx context.Context) error {
@@ -32,15 +32,21 @@ func (ctrl Controller) UpdatePR(ctx context.Context) error {
 	}
 
 	for _, pr := range prs {
-		log.Println("start to proceed the pull request " + ctrl.Config.Owner + "/" + ctrl.Config.Repo + "/" + strconv.Itoa(*pr.Number) + " " + *pr.Head.Ref + " " + *pr.Title)
+		logger := logrus.WithFields(logrus.Fields{
+			"owner":     ctrl.Config.Owner,
+			"repo":      ctrl.Config.Repo,
+			"pr_number": *pr.Number,
+			"head_ref":  *pr.Head.Ref,
+		})
+		logger.Debug("start to proceed the pull request")
 		b, err := json.Marshal(pr)
 		if err != nil {
-			log.Println(err)
+			logger.WithError(err).Error("failed to marshal the request body")
 			continue
 		}
 		m := map[string]interface{}{}
 		if err := json.Unmarshal(b, &m); err != nil {
-			log.Println(err)
+			logger.WithError(err).Error("failed to unmarshal the request body")
 			continue
 		}
 		M := map[string]interface{}{
@@ -52,20 +58,21 @@ func (ctrl Controller) UpdatePR(ctx context.Context) error {
 		}
 		matched, err := ctrl.Expr.Match(M)
 		if err != nil {
-			log.Println(err)
+			logger.WithError(err).Error("failed to evaluate whether the pull request matches the condition")
 			continue
 		}
 		if !matched {
-			log.Println("this pull request is skipped because it doesn't match the condition")
+			logger.Debug("this pull request is skipped because it doesn't match the condition")
 			continue
 		}
 
-		log.Println("update the pull request " + ctrl.Config.Owner + "/" + ctrl.Config.Repo + "/" + strconv.Itoa(*pr.Number) + " " + *pr.Head.Ref + " " + *pr.Title)
+		logger.Debug("update the pull request")
 		if err := ctrl.updatePR(ctx, ParamsUpdatePR{
 			Branch:         *pr.Head.Ref,
 			EmptyCommitMsg: ctrl.Config.EmptyCommitMsg,
+			Logger:         logger,
 		}); err != nil {
-			log.Println(err)
+			logger.WithError(err).Error("failed to update the pull request")
 			continue
 		}
 	}
@@ -104,9 +111,15 @@ func (ctrl Controller) updatePRByGit(ctx context.Context, params ParamsUpdatePR)
 }
 
 func (ctrl Controller) updatePRByAPI(ctx context.Context, params ParamsUpdatePR) error { //nolint:funlen
-	log.Println("update by GitHub API")
 	branch := "heads/" + params.Branch
 	emptyCommitMsg := params.EmptyCommitMsg
+	logger := params.Logger
+	if logger == nil {
+		logger = logrus.WithFields(logrus.Fields{
+			"owner": ctrl.Config.Owner,
+			"repo":  ctrl.Config.Repo,
+		})
+	}
 
 	ref, _, err := ctrl.GitHub.GetRef(ctx, gh.ParamsGetRef{
 		Owner: ctrl.Config.Owner,
@@ -137,6 +150,9 @@ func (ctrl Controller) updatePRByAPI(ctx context.Context, params ParamsUpdatePR)
 	if err != nil {
 		return fmt.Errorf("failed to create an empty commit by GitHub API %s/%s %s: %w", ctrl.Config.Owner, ctrl.Config.Repo, *cmt.Tree.SHA, err)
 	}
+	logger.WithFields(logrus.Fields{
+		"sha": *newCmt.SHA,
+	}).Debug("an empty commit is created by GitHub API")
 
 	_, _, err = ctrl.GitHub.UpdateRef(ctx, gh.ParamsUpdateRef{
 		Owner: ctrl.Config.Owner,
@@ -147,13 +163,21 @@ func (ctrl Controller) updatePRByAPI(ctx context.Context, params ParamsUpdatePR)
 	if err != nil {
 		return fmt.Errorf("failed to update a git reference by GitHub API %s/%s %s %s: %w", ctrl.Config.Owner, ctrl.Config.Repo, branch, sha, err)
 	}
+	logger.WithFields(logrus.Fields{
+		"sha": *newCmt.SHA,
+		"ref": branch,
+	}).Debug("the branch reference is changed to the empty commit by GitHub API")
 
+	interval := 5 * time.Second //nolint:gomnd
+	logger.WithFields(logrus.Fields{
+		"interval": interval,
+	}).Debug("wait until the pull request's tracking branch is synchronized with the source branch for the pull request")
 	// https://github.community/t/what-is-a-pull-request-synchronize-event/14784/2
 	// > A pull_request event it’s only triggered when the pull request’s tracking branch is synchronized with the source branch for the pull request,
 	// > and that happens when the source branch is updated.
 	// wait for GitHub to synchronize the change of the source branch.
 	// Otherwise, the `pull_request` event doesn't occur and the webhook isn't sent to the CI service.
-	timer := time.NewTimer(5 * time.Second) //nolint:gomnd
+	timer := time.NewTimer(interval)
 	select {
 	case <-timer.C:
 	case <-ctx.Done():
@@ -168,6 +192,10 @@ func (ctrl Controller) updatePRByAPI(ctx context.Context, params ParamsUpdatePR)
 	if err != nil {
 		return fmt.Errorf("failed to update a git reference by GitHub API %s/%s %s %s: %w", ctrl.Config.Owner, ctrl.Config.Repo, branch, sha, err)
 	}
+	logger.WithFields(logrus.Fields{
+		"sha": sha,
+		"ref": branch,
+	}).Debug("the branch reference is rollback by GitHub API")
 
 	return nil
 }

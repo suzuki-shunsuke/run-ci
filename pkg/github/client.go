@@ -2,7 +2,6 @@ package github
 
 import (
 	"context"
-	"log"
 
 	"github.com/google/go-github/v32/github"
 	"golang.org/x/oauth2"
@@ -68,7 +67,6 @@ type ParamsCreateEmptyCommit struct {
 
 func (client Client) CreateEmptyCommit(ctx context.Context, params ParamsCreateEmptyCommit) (*github.Commit, *github.Response, error) {
 	msg := params.CommitMsg
-	log.Println("create an empty commit: parent.tree.sha: " + *params.Parent.Tree.SHA)
 	return client.Client.Git.CreateCommit(ctx, params.Owner, params.Repo, &github.Commit{
 		Tree:    params.Parent.Tree,
 		Message: &msg,
@@ -86,7 +84,6 @@ type ParamsUpdateRef struct {
 func (client Client) UpdateRef(ctx context.Context, params ParamsUpdateRef) (*github.Reference, *github.Response, error) {
 	ref := params.Ref
 	sha := params.SHA
-	log.Println("update reference ref: " + ref + " sha: " + sha)
 	return client.Client.Git.UpdateRef(ctx, params.Owner, params.Repo, &github.Reference{
 		Ref: &ref,
 		Object: &github.GitObject{
