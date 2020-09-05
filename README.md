@@ -138,10 +138,7 @@ repo: run-ci # repository name
 empty_commit_msg: "[ci skip]" # empty commit's commit message
 expr: "true" # expression to filter pull requests
 github_token: xxx # GitHub Access Token
-git_command:
-  use: false # if true, git command is used to create an empty commit. By default, the GitHub API is used
-  user_name: run-ci # Git commit's user name
-  user_email: run-ci@example.com # Git commit's user email
+log_level: info # log level. To output the debug log, please set "debug"
 ```
 
 ### Expression
