@@ -116,6 +116,7 @@ OPTIONS:
    --github-token value      GitHub Access Token [$GITHUB_TOKEN, $GITHUB_ACCESS_TOKEN]
    --base value              base branch. Either the option 'base' or 'all' should be set
    --all                     get pull requests without specifying the base branch. Either the option 'base' or 'all' should be set (default: false)
+   --log-level value         log level
    --config value, -c value  configuration file path
    --help, -h                show help (default: false)
 ```
