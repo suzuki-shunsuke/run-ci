@@ -53,9 +53,9 @@ func (ctrl Controller) UpdatePR(ctx context.Context) error { //nolint:funlen
 			continue
 		}
 		M := map[string]interface{}{
-			"pr":  m,
-			"env": os.Getenv,
+			"pr": m,
 			"util": map[string]interface{}{
+				"env":        os.Getenv,
 				"labelNames": expr.LabelNames,
 			},
 		}

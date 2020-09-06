@@ -116,6 +116,7 @@ OPTIONS:
    --github-token value      GitHub Access Token [$GITHUB_TOKEN, $GITHUB_ACCESS_TOKEN]
    --base value              base branch. Either the option 'base' or 'all' should be set
    --all                     get pull requests without specifying the base branch. Either the option 'base' or 'all' should be set (default: false)
+   --log-level value         log level
    --config value, -c value  configuration file path
    --help, -h                show help (default: false)
 ```
@@ -171,14 +172,14 @@ We can express the condition of the pull request flexibility.
 To understand the language, we recommend to write a simple Go code with [antonmedv/expr](https://github.com/antonmedv/expr).
 We can try  [antonmedv/expr](https://github.com/antonmedv/expr) with [The Go Playground](https://play.golang.org).
 
-ex. https://play.golang.org/p/RrwWPT6cBuo
+ex. https://play.golang.org/p/wZZnybcioX1
 
 #### Expression variables
 
 * `pr`: pull request. Please see the response body of [list pull requests API](https://docs.github.com/en/rest/reference/pulls#list-pull-requests) 
-* `env`: The function to get the value of the environment variable. If the environment variable isn't set, the empty string is returned. [os.Getenv](https://golang.org/pkg/os/#Getenv) is used
 * `util`: The utility functions.
   * `labelNames(pr.labels) []string`: return the list of the pull request label names.
+  * `env`: The function to get the value of the environment variable. If the environment variable isn't set, the empty string is returned. [os.Getenv](https://golang.org/pkg/os/#Getenv) is used
 
 ## LICENSE
 
