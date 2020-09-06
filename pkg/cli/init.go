@@ -14,11 +14,7 @@ const cfgTpl = `---
 # repo: ""
 # expr: "true"
 # empty_commit_msg: "[ci skip]"
-# github_token: ""
-# git_command:
-#   use: false
-#   user_name: run-ci
-#   user_email: run-ci@example.com`
+# github_token: ""`
 
 func (runner Runner) initAction(c *cli.Context) error {
 	if _, err := os.Stat(".run-ci.yml"); err == nil {
