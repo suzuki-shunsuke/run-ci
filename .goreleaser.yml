@@ -1,6 +1,6 @@
 ---
 builds:
-- binary: cmdx
+- binary: run-ci
   main: cmd/run-ci/main.go
   env:
   - CGO_ENABLED=0
