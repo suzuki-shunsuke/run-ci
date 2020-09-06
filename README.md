@@ -1,5 +1,11 @@
 # run-ci
 
+[![Build Status](https://github.com/suzuki-shunsuke/run-ci/workflows/CI/badge.svg)](https://github.com/suzuki-shunsuke/run-ci/actions)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/005f67bb7c2e12f59824/test_coverage)](https://codeclimate.com/github/suzuki-shunsuke/run-ci/test_coverage)
+[![Go Report Card](https://goreportcard.com/badge/github.com/suzuki-shunsuke/run-ci)](https://goreportcard.com/report/github.com/suzuki-shunsuke/run-ci)
+[![GitHub last commit](https://img.shields.io/github/last-commit/suzuki-shunsuke/run-ci.svg)](https://github.com/suzuki-shunsuke/run-ci)
+[![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/suzuki-shunsuke/run-ci/master/LICENSE)
+
 CLI tool to run CI automatically when pull request's base branch is updated.
 
 ## Overview
