@@ -6,7 +6,7 @@ require (
 	github.com/antonmedv/expr v1.8.9
 	github.com/google/go-github/v32 v32.1.0
 	github.com/sirupsen/logrus v1.7.0
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 	github.com/suzuki-shunsuke/go-ci-env v1.1.0
 	github.com/suzuki-shunsuke/go-error-with-exit-code v1.0.0
 	github.com/suzuki-shunsuke/go-timeout v1.0.0
